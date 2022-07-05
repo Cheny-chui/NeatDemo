@@ -1,3 +1,5 @@
+import math
+
 import gurobipy
 import data
 import typing
@@ -45,14 +47,14 @@ E_topo = get_edge_set(TOPO)
 E_config = get_edge_set(CONFIG)
 
 
-def run(POLICY: typing.Dict[tuple[str, str], tuple[int, int]]):
+def run(POLICY: typing.Dict[tuple[str, str], tuple[float, int]]):
     # 边集
 
     # 创建优化模型
     MODEL = gurobipy.Model()
     # 创建变量
     x_ij = MODEL.addVars(E_topo, vtype=gurobipy.GRB.BINARY)
-    x_ijpq = MODEL.addVars(E_topo, POLICY, vtype=gurobipy.GRB.BINARY)
+    x_ijpq = MODEL.addVars(E_topo, POLICY, lb=0.0, ub=1.0, vtype=gurobipy.GRB.CONTINUOUS)
     # 更新变量环境
     MODEL.update()
 
@@ -82,7 +84,7 @@ def run(POLICY: typing.Dict[tuple[str, str], tuple[int, int]]):
         for i, j in E_topo
     )
 
-    # (4) 单播
+    # (4) 单播 与多路径冲突
     # MODEL.addConstrs(
     #     gurobipy.quicksum(x_ij[i, j] for j in TOPO[i]) <= 1
     #     for i in TOPO
@@ -92,12 +94,12 @@ def run(POLICY: typing.Dict[tuple[str, str], tuple[int, int]]):
         # waypoint
         MODEL.addConstrs(
             gurobipy.quicksum(x_ijpq[i, j, p, q] for j in TOPO[i]) == 0
-            for p, q in POLICY for i in TOPO if i != p and i != q and
+            for i in TOPO if i != p and i != q and
             i in data.POLICY_DATA['map'] and (have_policy_path(i, p) or have_policy_path(i, q))
         )
         MODEL.addConstrs(
             gurobipy.quicksum(x_ijpq[j, i, p, q] for j in TOPO[i]) == 0
-            for p, q in POLICY for i in TOPO if i != p and i != q and
+            for i in TOPO if i != p and i != q and
             i in data.POLICY_DATA['map'] and (have_policy_path(i, p) or have_policy_path(i, q))
         )
         if m == 0:  # Isolation
@@ -123,23 +125,22 @@ def run(POLICY: typing.Dict[tuple[str, str], tuple[int, int]]):
                 for i in TOPO if i != p and i != q and i != 'DROP' and not (
                         i in data.POLICY_DATA['map'] and (have_policy_path(i, p) or have_policy_path(i, q)))
             )
-        elif m == 1:
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[i, j, p, q] for j in TOPO[i]) == 1
-                for i in TOPO if i == p
+        elif m <= 1:
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in TOPO['DROP']) == 0
             )
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[j, i, p, q] for j in TOPO[i]) == 0
-                for i in TOPO if i == p
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[p, j, p, q] for j in TOPO[p]) == 1
+            )
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[j, p, p, q] for j in TOPO[p]) == 0
             )
 
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[j, i, p, q] for j in TOPO[i]) == 1
-                for i in TOPO if i == q
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[j, q, p, q] for j in TOPO[q]) == 1
             )
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[i, j, p, q] for j in TOPO[i]) == 0
-                for i in TOPO if i == q
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[q, j, p, q] for j in TOPO[q]) == 0
             )
             # else
             MODEL.addConstrs(
@@ -147,23 +148,28 @@ def run(POLICY: typing.Dict[tuple[str, str], tuple[int, int]]):
                 for i in TOPO if i != p and i != q and not (
                         i in data.POLICY_DATA['map'] and (have_policy_path(i, p) or have_policy_path(i, q)))
             )
+            if m < 1:  # 负载均衡
+                MODEL.addConstr(
+                    gurobipy.quicksum(
+                        math.log(x_ijpq[i, j, p, q]) for i, j in E_topo if x_ijpq[i, j, p, q]
+                    ) == math.log(m)
+                )
         elif m > 1:
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[i, j, p, q] for j in TOPO[i]) >= m
-                for i in TOPO if i == p
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in TOPO['DROP']) == 0
             )
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[j, i, p, q] for j in TOPO[i]) == 0
-                for i in TOPO if i == p
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[p, j, p, q] for j in TOPO[p]) >= m
+            )
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[j, p, p, q] for j in TOPO[p]) == 0
             )
 
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[j, i, p, q] for j in TOPO[i]) >= m
-                for i in TOPO if i == q
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[j, q, p, q] for j in TOPO[q]) >= m
             )
-            MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[i, j, p, q] for j in TOPO[i]) == 0
-                for i in TOPO if i == q
+            MODEL.addConstr(
+                gurobipy.quicksum(x_ijpq[q, j, p, q] for j in TOPO[q]) == 0
             )
             # else
             MODEL.addConstrs(
@@ -180,14 +186,18 @@ def run(POLICY: typing.Dict[tuple[str, str], tuple[int, int]]):
 
     # 执行
     MODEL.optimize()
-    return MODEL.getAttr('x', x_ij) if MODEL.status == gurobipy.GRB.Status.OPTIMAL else None
+    return (MODEL.getAttr('x', x_ij), MODEL.getAttr('x', x_ijpq)) \
+        if MODEL.status == gurobipy.GRB.Status.OPTIMAL else (None, None)
 
 
 if __name__ == '__main__':
-    result = run(POLICY)
-    if result:
-        for k, v in result.items():
+    (x_ij, x_ijpq) = run(POLICY)
+    if x_ij:
+        for k, v in x_ij.items():
             if v == 1 and (k not in E_config):
                 print(f'添加边: {k}')
+                for (i, j, p, q) in x_ijpq:
+                    if (i, j) == k and x_ijpq[i, j, p, q]:
+                        print(f'    此边流量:{p, q} 流量大小:{x_ijpq[i, j, p, q]}')
             if v == 0 and (k in E_config):
                 print(f'删除边: {k}')
