@@ -54,7 +54,7 @@ def run(POLICY: typing.Dict[tuple[str, str], tuple[float, int]]):
     MODEL = gurobipy.Model()
     # 创建变量
     x_ij = MODEL.addVars(E_topo, vtype=gurobipy.GRB.BINARY)
-    x_ijpq = MODEL.addVars(E_topo, POLICY, lb=0.0, ub=1.0, vtype=gurobipy.GRB.CONTINUOUS)
+    x_ijpq = MODEL.addVars(E_topo, POLICY, vtype=gurobipy.GRB.BINARY)
     # 更新变量环境
     MODEL.update()
 
@@ -148,12 +148,7 @@ def run(POLICY: typing.Dict[tuple[str, str], tuple[float, int]]):
                 for i in TOPO if i != p and i != q and not (
                         i in data.POLICY_DATA['map'] and (have_policy_path(i, p) or have_policy_path(i, q)))
             )
-            if m < 1:  # 负载均衡
-                MODEL.addConstr(
-                    gurobipy.quicksum(
-                        math.log(x_ijpq[i, j, p, q]) for i, j in E_topo if x_ijpq[i, j, p, q]
-                    ) == math.log(m)
-                )
+            # DELETE 负载均衡
         elif m > 1:
             MODEL.addConstr(
                 gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in TOPO['DROP']) == 0
