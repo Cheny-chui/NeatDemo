@@ -13,12 +13,12 @@ POLICY_DATA = {
         ('m', 'r'): (1, -1),
         ('r', 'j'): (1, -1)
     },
-    'path_length': {
-        ('m', 'j'): (1, 3)
-    },
-    'multipath': {  # 多路径 和 path_length互相冲突，path_length作用于单路径，要么就要 n = n*m 限制总体
-        ('i', 'j'): (3, -1),
-    },
+    # 'path_length': {
+    #     ('m', 'j'): (1, 3)
+    # },
+    # 'multipath': {  # 多路径 和 path_length互相冲突，path_length作用于单路径，要么就要 n = n*m 限制总体
+    #     ('i', 'j'): (3, -1),
+    # },
 }
 
 POLICY_GRAPH = {

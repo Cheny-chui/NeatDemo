@@ -23,6 +23,7 @@ def repair(policy: typing.Dict[tuple[str, str], tuple[int, int]], policy_graph):
     MODEL.update()
 
     # 目标函数
+    # TODO 考虑将目标函数设为 x_ijpq的最小修改
     MODEL.setObjective(
         gurobipy.quicksum(x_ij[i, j] for (i, j) in E_topo if (i, j) not in E_config) - gurobipy.quicksum(
             x_ij[i, j] for (i, j) in E_topo if (i, j) in E_config),
@@ -48,7 +49,7 @@ def repair(policy: typing.Dict[tuple[str, str], tuple[int, int]], policy_graph):
         for i, j in E_topo
     )
 
-    # (4) 单播 与多路径冲突
+    # # (4) 单播 与多路径冲突
     # MODEL.addConstrs(
     #     gurobipy.quicksum(x_ij[i, j] for j in TOPO[i]) <= 1
     #     for i in TOPO
@@ -89,11 +90,12 @@ def repair(policy: typing.Dict[tuple[str, str], tuple[int, int]], policy_graph):
             )
             MODEL.addConstrs(
                 gurobipy.quicksum((x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q]) for j in TOPO[i]) == 0
-                for i in TOPO if i != p and i != q and i != 'DROP' and
+                for i in TOPO if i != p and i != q and i != 'DROP'
+                and
                 not (i in policy_graph and (
                         have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph, i, q)))
             )
-        elif m <= 1:
+        elif m <= 1:  # reachability
             MODEL.addConstr(
                 gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in TOPO['DROP']) == 0
             )
@@ -113,11 +115,12 @@ def repair(policy: typing.Dict[tuple[str, str], tuple[int, int]], policy_graph):
             # else
             MODEL.addConstrs(
                 gurobipy.quicksum((x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q]) for j in TOPO[i]) == 0
-                for i in TOPO if i != p and i != q and not (
+                for i in TOPO if i != p and i != q
+                and not (
                         i in policy_graph and (
                         have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph, i, q)))
             )
-        elif m > 1:
+        elif m > 1:  # multi_path
             MODEL.addConstr(
                 gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in TOPO['DROP']) == 0
             )
@@ -137,11 +140,13 @@ def repair(policy: typing.Dict[tuple[str, str], tuple[int, int]], policy_graph):
             # else
             MODEL.addConstrs(
                 gurobipy.quicksum((x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q]) for j in TOPO[i]) == 0
-                for i in TOPO if
-                i != p and i != q and not (i in policy_graph and (have_policy_path(i, p) or have_policy_path(i, q)))
+                for i in TOPO if i != p and i != q
+                and not (
+                        i in policy_graph and (
+                        have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph, i, q)))
             )
-        # path length
-        if n != -1:
+
+        if n != -1:  # path length
             MODEL.addConstr(
                 gurobipy.quicksum(x_ijpq[i, j, p, q] for i, j in E_topo) <= n
             )
@@ -167,8 +172,9 @@ def repair(policy: typing.Dict[tuple[str, str], tuple[int, int]], policy_graph):
                         if (i, j) == key and config_flow[i, j, p, q]:
                             flow.append((p, q))
                     if flow != last_flow[key]:
-                        print(f'边{key}的流量变化:')
-                        print(f'    {last_flow[key]} ===>>> {flow}')
+                        print(f'修改边: {key}')
+                        print(f'    边{key}的流量变化: {last_flow[key]} ===>>> {flow}')
+                        last_flow[key] = flow
                     else:
                         print(f'边{key}的流量还是: {flow}')
             if value == 0 and (key in E_config):

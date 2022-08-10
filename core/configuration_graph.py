@@ -4,6 +4,10 @@ CONFIGURATION_GRAPH = {
 
 }
 
+EDGE_FLOW = {
+    
+}
+
 
 def get_configuration_graph():
     return CONFIGURATION_GRAPH
