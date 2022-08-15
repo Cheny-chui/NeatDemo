@@ -1,32 +1,32 @@
-TEST_POLICY = {
-    ('Host_A', 'Host_B'): (2, -1),
-}
-
-TEST_TOPO = {
-    'Host_A': ['ER_1', 'ER_2'],
-    'Host_B': ['ER_3', 'ER_4'],
-    'ER_1': ['Host_A', 'FW_1', 'FW_2'],
-    'ER_2': ['Host_A', 'FW_2'],
-    'ER_3': ['Host_B', 'FW_3', 'FW_4'],
-    'ER_4': ['Host_B', 'FW_3'],
-    'FW_1': ['ER_1', 'CR_1'],
-    'FW_2': ['ER_1', 'ER_2', 'CR_1'],
-    'FW_3': ['ER_3', 'ER_4', 'CR_1'],
-    'FW_4': ['ER_3', 'CR_1'],
-    'CR_1': ['FW_1', 'FW_2', 'FW_3', 'FW_4'],
-}
-
-TEST_CONFIGURATION = {
-    'Host_A': ['ER_2'],
-    'Host_B': [],
-    'ER_2': ['FW_2'],
-    'ER_3': ['Host_B'],
-    'ER_4': ['Host_B'],
-    'FW_2': ['CR_1'],
-    'FW_3': ['ER_3', 'ER_4'],
-    'FW_4': ['ER_3'],
-    'CR_1': ['FW_3', 'FW_4'],
-}
+# TEST_POLICY = {
+#     ('Host_A', 'Host_B'): (2, -1),
+# }
+#
+# TEST_TOPO = {
+#     'Host_A': ['ER_1', 'ER_2'],
+#     'Host_B': ['ER_3', 'ER_4'],
+#     'ER_1': ['Host_A', 'FW_1', 'FW_2'],
+#     'ER_2': ['Host_A', 'FW_2'],
+#     'ER_3': ['Host_B', 'FW_3', 'FW_4'],
+#     'ER_4': ['Host_B', 'FW_3'],
+#     'FW_1': ['ER_1', 'CR_1'],
+#     'FW_2': ['ER_1', 'ER_2', 'CR_1'],
+#     'FW_3': ['ER_3', 'ER_4', 'CR_1'],
+#     'FW_4': ['ER_3', 'CR_1'],
+#     'CR_1': ['FW_1', 'FW_2', 'FW_3', 'FW_4'],
+# }
+#
+# TEST_CONFIGURATION = {
+#     'Host_A': ['ER_2'],
+#     'Host_B': [],
+#     'ER_2': ['FW_2'],
+#     'ER_3': ['Host_B'],
+#     'ER_4': ['Host_B'],
+#     'FW_2': ['CR_1'],
+#     'FW_3': ['ER_3', 'ER_4'],
+#     'FW_4': ['ER_3'],
+#     'CR_1': ['FW_3', 'FW_4'],
+# }
 
 
 # 每个node的id 第一个下划线之前为 label
@@ -36,10 +36,10 @@ def get_label(node_id: str):
 
 
 # 本来应该要对Topo图进行标记，但由于不与Configuration重合的Topo图本来就不进行压缩，因此只需要标记Configuration
-def get_uncompressed_node(policy_graph: dict, configuration_graph: dict, topo_graph: dict):
+def get_uncompressed_node(policies: dict, configuration_graph: dict, topo_graph: dict):
     uncompressed_node = set()
-    for policy in policy_graph:
-        if policy_graph[policy][0] > 1:
+    for policy in policies:
+        if policies[policy][0] > 1:
             start = policy[0]
             end = policy[1]
             # start's child
@@ -80,9 +80,12 @@ def verify_bisimulation(graph: dict, node1: str, node2: str):
     return True
 
 
-def get_compressed_graph(policy_graph: dict, configuration_graph: dict, topo_graph: dict):
-    uncompressed_node = get_uncompressed_node(policy_graph, configuration_graph, topo_graph)
-
+def get_compressed_graph(policies: dict,
+                         configuration_graph: dict,
+                         topo_graph: dict,
+                         configuration_flow,
+                         configuration_edge_flows):
+    uncompressed_node = get_uncompressed_node(policies, configuration_graph, topo_graph)
     label_dict = {}
     for node in configuration_graph:
         if node in uncompressed_node:  # 不压缩此类节点
@@ -133,13 +136,24 @@ def get_compressed_graph(policy_graph: dict, configuration_graph: dict, topo_gra
 
     # get compressed graph
     compressed_configuration_graph = {}
+    compressed_configuration_flow = {}
+    compressed_configuration_edge_flows = set()
     for cluster in clusters:
         if cluster not in compressed_configuration_graph:
             compressed_configuration_graph[cluster] = list()
         for node in cluster:
             for child in configuration_graph[node]:
+                # 压缩 edge：flow dict
+                if (cluster, node_cluster_dict[child]) not in compressed_configuration_flow:
+                    compressed_configuration_flow[cluster, node_cluster_dict[child]] = set()
+                compressed_configuration_flow[cluster, node_cluster_dict[child]].union(configuration_flow[node, child])
+
                 if node_cluster_dict[child] not in compressed_configuration_graph[cluster]:
                     compressed_configuration_graph[cluster].append(node_cluster_dict[child])
+    # 压缩 (edge,flow) set
+    for (i, j) in compressed_configuration_flow:
+        for (p, q) in compressed_configuration_flow[i, j]:
+            compressed_configuration_edge_flows.add(tuple([i, j, p, q]))
 
     compressed_topo_graph = {}
     # 先把 压缩配置图 无向化
@@ -175,8 +189,9 @@ def get_compressed_graph(policy_graph: dict, configuration_graph: dict, topo_gra
             if cluster not in compressed_topo_graph[child_cluster]:
                 compressed_topo_graph[child_cluster].append(cluster)
 
-    return compressed_configuration_graph, compressed_topo_graph
+    return compressed_configuration_graph, compressed_topo_graph, \
+           compressed_configuration_flow, compressed_configuration_edge_flows
 
 
-if __name__ == "__main__":
-    get_compressed_graph(TEST_POLICY, TEST_CONFIGURATION, TEST_TOPO)
+# if __name__ == "__main__":
+#     get_compressed_graph(TEST_POLICY, TEST_CONFIGURATION, TEST_TOPO)
