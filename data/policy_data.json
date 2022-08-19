@@ -1,0 +1,7 @@
+{
+	"policies": [
+		["openflow:A", "openflow:B", 1, -1],
+		["openflow:C", "openflow:B", 1, -1],
+		["openflow:D", "openflow:B", 1, -1]
+	]
+}

@@ -1,8 +1,9 @@
-from input.configuration_graph import get_configuration_flow
+from input.topo_graph import get_topo_graph
 
 
-def map_addition_back(topo_graph: dict, cluster_i: tuple, cluster_j: tuple, p: str, q: str):
+def map_addition_back(cluster_i: tuple, cluster_j: tuple, p: str, q: str):
     result = set()
+    topo_graph = get_topo_graph()
     for i in cluster_i:
         for j in cluster_j:
             if j in topo_graph[i]:
@@ -12,10 +13,5 @@ def map_addition_back(topo_graph: dict, cluster_i: tuple, cluster_j: tuple, p: s
 
 
 def map_deletion_back(cluster_i: tuple, cluster_j: tuple, p: str, q: str):
-    edge_flows = get_configuration_flow()
-    original_edge = set()
-    for i in cluster_i:
-        for j in cluster_j:
-            if (i, j, p, q) in edge_flows:
-                original_edge.add(tuple([i, j, p, q]))
-    return original_edge
+    # TODO 如何得到压缩边对应的原边
+    return

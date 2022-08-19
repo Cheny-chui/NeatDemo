@@ -1,0 +1,6 @@
+{
+	"graph": {
+		"openflow:A" : ["openflow:B"],
+		"openflow:D" : ["openflow:B"]
+	}
+}

@@ -1,7 +1,5 @@
-from core import repair
-from input import policy_graph
-from input import topo_graph
-from input import configuration_graph
+from core.repair import repair
+from preprocess.read_data import *
 
 TOPO_GRAPH_DATA = {
     'a': ['i'],
@@ -43,10 +41,12 @@ POLICY_DATA = {
 }
 
 if __name__ == '__main__':
-    # input
-    topo_graph.init_topo_graph(TOPO_GRAPH_DATA)
-
-    for key, value in POLICY_DATA.items():
-        print(f'========{key}========')
-        policy_graph.init_policy(value)
-        repair.repair()
+    # repair reachability
+    set_topo()
+    set_policy()
+    set_configuration()
+    result = repair()
+    with open('output.json', 'w') as output:
+        for key in result:
+            result[key] = list(result[key])
+        json.dump(result, output)

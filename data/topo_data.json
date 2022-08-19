@@ -1,0 +1,8 @@
+{
+	"graph": {
+		"openflow:A" : ["openflow:B","openflow:C","openflow:D"],
+		"openflow:B" : ["openflow:A","openflow:C","openflow:D"],
+		"openflow:C" : ["openflow:B","openflow:A","openflow:D"],
+		"openflow:D" : ["openflow:B","openflow:C","openflow:A"]
+	}
+}

@@ -82,9 +82,7 @@ def verify_bisimulation(graph: dict, node1: str, node2: str):
 
 def get_compressed_graph(policies: dict,
                          configuration_graph: dict,
-                         topo_graph: dict,
-                         configuration_flow,
-                         configuration_edge_flows):
+                         topo_graph: dict):
     uncompressed_node = get_uncompressed_node(policies, configuration_graph, topo_graph)
     label_dict = {}
     for node in configuration_graph:
@@ -136,24 +134,13 @@ def get_compressed_graph(policies: dict,
 
     # get compressed graph
     compressed_configuration_graph = {}
-    compressed_configuration_flow = {}
-    compressed_configuration_edge_flows = set()
     for cluster in clusters:
         if cluster not in compressed_configuration_graph:
             compressed_configuration_graph[cluster] = list()
         for node in cluster:
             for child in configuration_graph[node]:
-                # 压缩 edge：flow dict
-                if (cluster, node_cluster_dict[child]) not in compressed_configuration_flow:
-                    compressed_configuration_flow[cluster, node_cluster_dict[child]] = set()
-                compressed_configuration_flow[cluster, node_cluster_dict[child]].union(configuration_flow[node, child])
-
                 if node_cluster_dict[child] not in compressed_configuration_graph[cluster]:
                     compressed_configuration_graph[cluster].append(node_cluster_dict[child])
-    # 压缩 (edge,flow) set
-    for (i, j) in compressed_configuration_flow:
-        for (p, q) in compressed_configuration_flow[i, j]:
-            compressed_configuration_edge_flows.add(tuple([i, j, p, q]))
 
     compressed_topo_graph = {}
     # 先把 压缩配置图 无向化
@@ -189,8 +176,7 @@ def get_compressed_graph(policies: dict,
             if cluster not in compressed_topo_graph[child_cluster]:
                 compressed_topo_graph[child_cluster].append(cluster)
 
-    return compressed_configuration_graph, compressed_topo_graph, \
-           compressed_configuration_flow, compressed_configuration_edge_flows
+    return compressed_configuration_graph, compressed_topo_graph
 
 
 # if __name__ == "__main__":

@@ -4,9 +4,9 @@ TOPO_GRAPH = {}
 
 
 # 输入 拓扑图
-def init_topo_graph(graph: dict[str, list[str]]):
+def init_topo_graph(graph: dict[str, set[str]]):
     # 一定要添加一个 DROP 节点 供isolation使用
-    graph['DROP'] = list()
+    graph['DROP'] = set()
     global TOPO_GRAPH
     TOPO_GRAPH = graph
     return
