@@ -2,8 +2,9 @@ import json
 
 
 def loop_free():
-    with open('data/loop_free_data.json') as data:
+    with open('/home/zcy/code/NeatDemo/data/apkeep.json') as data:
         loop_free_data = json.load(data)
+        print(loop_free_data)
         loops = set()
         policies = set()
         for loop in loop_free_data['loops']:
@@ -15,7 +16,8 @@ def loop_free():
         return result
 
 
-def get_remove_links(loops_set: set[tuple[str, ...]], policies: set[tuple[str, ...]]):
+#def get_remove_links(loops_set: set[tuple[str, ...]], policies: set[tuple[str, ...]]):
+def get_remove_links(loops_set, policies):
     # 没有loop，直接退出
     if not len(loops_set):
         return None
