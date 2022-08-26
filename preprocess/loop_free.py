@@ -2,7 +2,7 @@ import json
 
 
 def loop_free():
-    with open('/home/zcy/code/NeatDemo/data/apkeep.json') as data:
+    with open('/home/zcy/code/NeatDemo/data/loop_free_data.json') as data:
         loop_free_data = json.load(data)
         print(loop_free_data)
         loops = set()
@@ -42,6 +42,12 @@ def get_remove_links(loops_set, policies):
 
     solved_loops = set()
     deleted_links = set()
+
+    # 根据loops的长度降序，以免多删边
+    temp = {}
+    for loops in sorted(shared_links,key=len,reverse=True):
+        temp[loops] = shared_links[loops]
+    shared_links = temp
 
     # 删除公共边
     for loops, links in shared_links.items():
