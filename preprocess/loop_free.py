@@ -2,7 +2,7 @@ import json
 
 
 def loop_free():
-    with open('/home/zcy/code/NeatDemo/data/loop_free_data.json') as data:
+    with open('data/loop_free_data.json') as data:
         loop_free_data = json.load(data)
         print(loop_free_data)
         loops = set()
