@@ -1,0 +1,10 @@
+{
+	"loops" : [
+			["ovs:5","ovs:1","ovs:4","ovs:2","ovs:5"],
+			["ovs:3","ovs:6","ovs:2","ovs:3"]
+	],
+	"policies" : [
+			["host:1","host:2"],
+    ]
+}
+

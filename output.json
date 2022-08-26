@@ -1,1 +1,1 @@
-{"edge_addition": [["openflow:C", "openflow:B"]], "edge_deletion": []}
+{"solved_loops": [["openflow:B", "openflow:C", "openflow:D", "openflow:B"]], "deleted_links": [["openflow:B", "openflow:C"]]}
