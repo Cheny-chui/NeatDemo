@@ -1,1 +1,1 @@
-{"loops": [["openflow:A", "openflow:C", "openflow:D", "openflow:B", "openflow:A"]], "policies": [["openflow:A", "openflow:B"], ["openflow:C", "openflow:B"], ["openflow:D", "openflow:B"]]}
+{"loops": [["dev_A", "dev_C", "dev_D", "dev_B", "dev_A"]], "policies": [["dev_A", "dev_B"], ["dev_C", "dev_B"], ["dev_D", "dev_B"]]}

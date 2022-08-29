@@ -1,4 +1,5 @@
-from preprocess.loop_free import *
+from preprocess.loop_free import loop_free
+import json
 
 if __name__ == '__main__':
     result = loop_free()

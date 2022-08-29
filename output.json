@@ -1,1 +1,1 @@
-{"solved_loops": [["openflow:A", "openflow:C", "openflow:D", "openflow:B", "openflow:A"]], "deleted_links": [["openflow:B", "openflow:A"]]}
+{"solved_loops": [["dev_A", "dev_C", "dev_D", "dev_B", "dev_A"]], "deleted_links": [["dev_B", "dev_A"]]}
