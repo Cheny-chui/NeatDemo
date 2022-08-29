@@ -1,1 +1,1 @@
-{"solved_loops": [["ovs:5", "ovs:1", "ovs:4", "ovs:2", "ovs:5"], ["ovs:4", "ovs:2", "ovs:6", "ovs:3", "ovs:4"], ["ovs:4", "ovs:2", "ovs:1", "ovs:4"]], "deleted_links": [["ovs:4", "ovs:2"]]}
+{"solved_loops": [["openflow:A", "openflow:C", "openflow:D", "openflow:B", "openflow:A"]], "deleted_links": [["openflow:B", "openflow:A"]]}
