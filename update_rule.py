@@ -25,10 +25,10 @@ def get_device_rules() -> dict[str, dict[str, list]]:
 def set_rules(device_rules: dict[str, dict[str, list]]):
     with open('new_odlrule.txt', 'w') as output:
         for device, rules in device_rules.items():
-            output.write(f'$devicename ${device}\n')
+            output.write(f'$devicename {device}\n')
             for prefix, actions in rules.items():
                 for action in actions:
-                    output.write(f'${prefix} ${action}\n')
+                    output.write(f'{prefix} {action}\n')
 
 
 def get_edge_port() -> dict[tuple, tuple]:
@@ -53,8 +53,8 @@ def get_edge_port() -> dict[tuple, tuple]:
 
 # usage: python update_rule.py ec_str
 if __name__ == '__main__':
-    ec = sys.argv[1]
-    # ec = "11.0.0.0/8"
+    # ec = sys.argv[1]
+    ec = "11.0.0.0/8"
     device_rules = get_device_rules()
     edge_port = get_edge_port()
     with open('output.json') as f:
