@@ -1,0 +1,10 @@
+{
+	"loops" : [
+		["dev_B","dev_C","dev_D","dev_B"]
+	],
+	"policies" : [
+		["dev_A","dev_B"],
+		["dev_C","dev_B"],
+		["dev_D","dev_B"]
+    ]
+}

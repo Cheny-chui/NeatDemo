@@ -1,7 +1,5 @@
 import gurobipy
 
-from .compress import get_compressed_graph
-
 from preprocess.configuration_graph import get_configuration_graph
 from preprocess.topo_graph import get_topo_graph
 from preprocess.policy_graph import have_policy_path
@@ -26,11 +24,7 @@ def repair(flag=None):
 
     # 压缩图
     if flag is not None:
-        configuration_graph, topo_graph, configuration_flow, configuration_edge_flow \
-            = get_compressed_graph(policies,
-                                   configuration_graph,
-                                   topo_graph)
-
+        pass
     # 边集
     topo_edges = get_edges(topo_graph)
     configuration_edges = get_edges(configuration_graph)
@@ -47,15 +41,18 @@ def repair(flag=None):
     # 目标函数
     # x_ij
     MODEL.setObjective(
-        gurobipy.quicksum(x_ij[i, j] for (i, j) in topo_edges if (i, j) not in configuration_edges)
+        gurobipy.quicksum(x_ij[i, j] for (i, j) in topo_edges
+                          if (i, j) not in configuration_edges)
         -
-        gurobipy.quicksum(x_ij[i, j] for (i, j) in topo_edges if (i, j) in configuration_edges),
+        gurobipy.quicksum(x_ij[i, j] for (i, j) in topo_edges
+                          if (i, j) in configuration_edges),
         sense=gurobipy.GRB.MINIMIZE)
 
     # 创建约束
     # (1) & (2) 上面存的TOPO是双向边，所以不用显式声明(2)的Constrain
     MODEL.addConstrs(
-        gurobipy.quicksum(x_ijpq[i, j, p, q] / len(policies) for p, q in policies)
+        gurobipy.quicksum(x_ijpq[i, j, p, q] / len(policies)
+                          for p, q in policies)
         <= x_ij[i, j] for i, j in topo_edges
     )
 
@@ -84,94 +81,120 @@ def repair(flag=None):
             gurobipy.quicksum(x_ijpq[i, j, p, q] for j in topo_graph[i]) == 0
             for i in topo_graph if i != p and i != q and
             i in policy_graph and (
-                    have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph,
-                                                                             i, q))
+                have_policy_path(policy_graph, i, p) or
+                have_policy_path(policy_graph, i, q))
         )
         MODEL.addConstrs(
             gurobipy.quicksum(x_ijpq[j, i, p, q] for j in topo_graph[i]) == 0
             for i in topo_graph if i != p and i != q and
             i in policy_graph and (
-                    have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph, i, q))
+                have_policy_path(policy_graph, i, p) or
+                have_policy_path(policy_graph, i, q))
         )
         if m == 0:  # Isolation
             MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[i, j, p, q] for j in topo_graph[i]) == 1
+                gurobipy.quicksum(x_ijpq[i, j, p, q]
+                                  for j in topo_graph[i]) == 1
                 for i in topo_graph if i == p
             )
             MODEL.addConstrs(
-                gurobipy.quicksum(x_ijpq[j, i, p, q] for j in topo_graph[i]) == 0
+                gurobipy.quicksum(x_ijpq[j, i, p, q]
+                                  for j in topo_graph[i]) == 0
                 for i in topo_graph if i == p
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq['DROP', j, p, q] for j in topo_graph['DROP']) == 0
+                gurobipy.quicksum(x_ijpq['DROP', j, p, q]
+                                  for j in topo_graph['DROP']) == 0
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in topo_graph['DROP']) == 1
+                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q]
+                                  for j in topo_graph['DROP']) == 1
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[q, j, p, q] for j in topo_graph[q]) == 0
+                gurobipy.quicksum(x_ijpq[q, j, p, q]
+                                  for j in topo_graph[q]) == 0
             )
             MODEL.addConstrs(
-                gurobipy.quicksum((x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q]) for j in topo_graph[i]) == 0
+                gurobipy.quicksum(
+                    (x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q])
+                    for j in topo_graph[i]) == 0
                 for i in topo_graph if i != p and i != q and i != 'DROP'
                 and
                 not (i in policy_graph and (
-                        have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph, i, q)))
+                    have_policy_path(policy_graph, i, p) or
+                    have_policy_path(policy_graph, i, q)))
             )
         elif m <= 1:  # reachability
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in topo_graph['DROP']) == 0
+                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q]
+                                  for j in topo_graph['DROP']) == 0
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[p, j, p, q] for j in topo_graph[p]) == 1
+                gurobipy.quicksum(x_ijpq[p, j, p, q]
+                                  for j in topo_graph[p]) == 1
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[j, p, p, q] for j in topo_graph[p]) == 0
+                gurobipy.quicksum(x_ijpq[j, p, p, q]
+                                  for j in topo_graph[p]) == 0
             )
 
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[j, q, p, q] for j in topo_graph[q]) == 1
+                gurobipy.quicksum(x_ijpq[j, q, p, q]
+                                  for j in topo_graph[q]) == 1
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[q, j, p, q] for j in topo_graph[q]) == 0
+                gurobipy.quicksum(x_ijpq[q, j, p, q]
+                                  for j in topo_graph[q]) == 0
             )
             # else
             MODEL.addConstrs(
-                gurobipy.quicksum((x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q]) for j in topo_graph[i]) == 0
+                gurobipy.quicksum(
+                    (x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q])
+                    for j in topo_graph[i]) == 0
                 for i in topo_graph if i != p and i != q
                 and not (
-                        i in policy_graph and (
-                        have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph, i, q)))
+                    i in policy_graph and (
+                        have_policy_path(policy_graph, i, p) or
+                        have_policy_path(policy_graph, i, q)))
             )
         elif m > 1:  # multi_path
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q] for j in topo_graph['DROP']) == 0
+                gurobipy.quicksum(x_ijpq[j, 'DROP', p, q]
+                                  for j in topo_graph['DROP']) == 0
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[p, j, p, q] for j in topo_graph[p]) >= m
+                gurobipy.quicksum(x_ijpq[p, j, p, q]
+                                  for j in topo_graph[p]) >= m
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[j, p, p, q] for j in topo_graph[p]) == 0
+                gurobipy.quicksum(x_ijpq[j, p, p, q]
+                                  for j in topo_graph[p]) == 0
             )
 
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[j, q, p, q] for j in topo_graph[q]) >= m
+                gurobipy.quicksum(x_ijpq[j, q, p, q]
+                                  for j in topo_graph[q]) >= m
             )
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[q, j, p, q] for j in topo_graph[q]) == 0
+                gurobipy.quicksum(x_ijpq[q, j, p, q]
+                                  for j in topo_graph[q]) == 0
             )
             # else
             MODEL.addConstrs(
-                gurobipy.quicksum((x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q]) for j in topo_graph[i]) == 0
+                gurobipy.quicksum(
+                    (x_ijpq[i, j, p, q] - x_ijpq[j, i, p, q])
+                    for j in topo_graph[i]) == 0
                 for i in topo_graph if i != p and i != q
                 and not (
-                        i in policy_graph and (
-                        have_policy_path(policy_graph, i, p) or have_policy_path(policy_graph, i, q)))
+                    i in policy_graph and (
+                        have_policy_path(policy_graph, i, p) or
+                        have_policy_path(policy_graph, i, q)))
             )
 
         if n != -1:  # path length
             MODEL.addConstr(
-                gurobipy.quicksum(x_ijpq[i, j, p, q] for i, j in topo_edges) <= n
+                gurobipy.quicksum(x_ijpq[i, j, p, q]
+                                  for i, j in topo_edges) <= n
             )
     MODEL.update()
 
@@ -194,5 +217,6 @@ def repair(flag=None):
         pass
         # TODO map back
     else:
-        result = {'edge_addition': edge_addition, 'edge_deletion': edge_deletion}
+        result = {'added_links': edge_addition,
+                  'deleted_links': edge_deletion}
         return result

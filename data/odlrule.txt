@@ -6,7 +6,3 @@ $devicename dev_C
 0.0.0.0/1 inf3
 $devicename dev_D
 0.0.0.0/1 inf1
-$devicename dev_B
-11.0.0.0/8 inf1
-
-
