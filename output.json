@@ -1,1 +1,1 @@
-{"added_links": [["dev_C", "dev_B"]], "deleted_links": []}
+{"added_links": [["dev_C", "dev_H", 0.2], ["dev_A", "dev_C", 0.6000000000000001], ["dev_B", "dev_D", 0.2], ["dev_A", "dev_B", 0.4000000000000001], ["dev_C", "dev_G", 0.2], ["dev_B", "dev_E", 0.2], ["dev_C", "dev_F", 0.2]], "deleted_links": [["dev_C", "dev_F"], ["dev_B", "dev_E"], ["dev_B", "dev_D"], ["dev_C", "dev_H"], ["dev_A", "dev_B"], ["dev_C", "dev_G"], ["dev_A", "dev_C"]]}

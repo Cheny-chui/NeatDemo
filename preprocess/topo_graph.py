@@ -1,5 +1,3 @@
-import gurobipy
-
 TOPO_GRAPH = {}
 
 

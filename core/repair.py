@@ -15,6 +15,16 @@ def get_edges(graph):
     return result
 
 
+def get_rate(topo_edges, configuration_graph):
+    result = {}
+    for i, j in topo_edges:
+        if (i, j) not in configuration_graph:
+            result[i, j] = 0.0
+        else:
+            result[i, j] = configuration_graph[i, j]
+    return result
+
+
 def repair(flag=None):
     # 图
     topo_graph = get_topo_graph()
@@ -27,46 +37,37 @@ def repair(flag=None):
         pass
     # 边集
     topo_edges = get_edges(topo_graph)
-    configuration_edges = get_edges(configuration_graph)
+    # rate
+    rate = get_rate(topo_edges, configuration_graph)
 
     # 创建优化模型
     MODEL = gurobipy.Model()
     # 创建变量
-    x_ij = MODEL.addVars(topo_edges, vtype=gurobipy.GRB.BINARY)
+    x_ij = MODEL.addVars(topo_edges, vtype=gurobipy.GRB.CONTINUOUS, lb=0.0, ub=1.0)
+    eps = 1e-6
     x_ijpq = MODEL.addVars(topo_edges, policies, vtype=gurobipy.GRB.BINARY)
 
     # 更新变量环境
     MODEL.update()
 
-    # 目标函数
-    # x_ij
+    # 目标函数 以平方代表绝对值
+    obj = gurobipy.LinExpr()
+    for i, j in topo_edges:
+        obj += (x_ij[i, j] - rate[i, j]) * (x_ij[i, j] - rate[i, j])
     MODEL.setObjective(
-        gurobipy.quicksum(x_ij[i, j] for (i, j) in topo_edges
-                          if (i, j) not in configuration_edges)
-        -
-        gurobipy.quicksum(x_ij[i, j] for (i, j) in topo_edges
-                          if (i, j) in configuration_edges),
+        obj,
         sense=gurobipy.GRB.MINIMIZE)
 
     # 创建约束
-    # (1) & (2) 上面存的TOPO是双向边，所以不用显式声明(2)的Constrain
-    MODEL.addConstrs(
-        gurobipy.quicksum(x_ijpq[i, j, p, q] / len(policies)
-                          for p, q in policies)
-        <= x_ij[i, j] for i, j in topo_edges
-    )
-
-    # 没有被映射到Policy就不能被映射到Config
-    # 此约束添加了 就会删除所有 ”不该“ 有的边
-    MODEL.addConstrs(
-        gurobipy.quicksum(x_ijpq[i, j, p, q] for p, q in policies)
-        >= x_ij[i, j] for i, j in topo_edges
-    )
+    # x_ij 取 m*x_ijpq
+    for i, j in topo_edges:
+        MODEL.addConstr(
+            x_ij[i, j] == gurobipy.quicksum(policies[p, q][0] * x_ijpq[i, j, p, q] for (p, q) in policies)
+        )
 
     # (3) 避免loop
     MODEL.addConstrs(
-        x_ij[i, j] + x_ij[j, i] <= 1
-        for i, j in topo_edges
+        x_ij[i,j] * x_ij[j,i] <= eps for i, j in topo_edges
     )
 
     # # (4) 单播 与多路径冲突
@@ -91,6 +92,7 @@ def repair(flag=None):
                 have_policy_path(policy_graph, i, p) or
                 have_policy_path(policy_graph, i, q))
         )
+
         if m == 0:  # Isolation
             MODEL.addConstrs(
                 gurobipy.quicksum(x_ijpq[i, j, p, q]
@@ -207,11 +209,12 @@ def repair(flag=None):
     if MODEL.status == gurobipy.GRB.Status.OPTIMAL:
         configuration_edge_select = MODEL.getAttr('x', x_ij)
         for ((i, j), value) in configuration_edge_select.items():
-            if value == 1 and (i, j) not in configuration_edges:
-                print(f'添加边: {(i, j)}')
-                edge_addition.add(tuple([i, j]))
-            if value == 0 and ((i, j) in configuration_edges):
-                print(f'删除边: {(i, j)}')
+            if abs(rate[i, j] - value) > eps:
+                if value > eps:
+                    print(f'添加或修改边: {(i, j)} 从 {rate[i, j]} 到 {value}')
+                edge_addition.add(tuple([i, j, value]))
+                if value <= eps:
+                    print(f'删除边: {(i, j)} {rate[i, j]}')
                 edge_deletion.add(tuple([i, j]))
     if flag is not None:
         pass

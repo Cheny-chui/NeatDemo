@@ -23,6 +23,8 @@ def read_repair_data():
 
         configuration_data = data['configuration_data']
         graph = configuration_data['graph']
+        tuple_graph = {}
         for key in graph:
-            graph[key] = set(graph[key])
-        init_configuration_graph(graph)
+            source, dst = key.split('-')
+            tuple_graph[(source, dst)] = graph[key]
+        init_configuration_graph(tuple_graph)

@@ -2,20 +2,20 @@
     "policy_data": {
         "policies": [
             [
-                "openflow:A",
-                "openflow:B",
+                "dev_A",
+                "dev_B",
                 1,
                 -1
             ],
             [
-                "openflow:C",
-                "openflow:B",
+                "dev_C",
+                "dev_B",
                 1,
                 -1
             ],
             [
-                "openflow:D",
-                "openflow:B",
+                "dev_D",
+                "dev_B",
                 1,
                 -1
             ]
@@ -23,35 +23,35 @@
     },
     "topo_data": {
         "graph": {
-            "openflow:A": [
-                "openflow:B",
-                "openflow:C",
-                "openflow:D"
+            "dev_A": [
+                "dev_B",
+                "dev_C",
+                "dev_D"
             ],
-            "openflow:B": [
-                "openflow:A",
-                "openflow:C",
-                "openflow:D"
+            "dev_B": [
+                "dev_A",
+                "dev_C",
+                "dev_D"
             ],
-            "openflow:C": [
-                "openflow:B",
-                "openflow:A",
-                "openflow:D"
+            "dev_C": [
+                "dev_B",
+                "dev_A",
+                "dev_D"
             ],
-            "openflow:D": [
-                "openflow:B",
-                "openflow:C",
-                "openflow:A"
+            "dev_D": [
+                "dev_B",
+                "dev_C",
+                "dev_A"
             ]
         }
     },
     "configuration_data": {
         "graph": {
-            "openflow:A": [
-                "openflow:B"
+            "dev_A": [
+                "dev_B"
             ],
-            "openflow:D": [
-                "openflow:B"
+            "dev_D": [
+                "dev_B"
             ]
         }
     }
