@@ -69,7 +69,8 @@
     },
     "configuration_data": {
         "graph": {
-
+            "dev_A-dev_B": 1.0,
+            "dev_B-dev_D": 0.9
         }
     }
 }
