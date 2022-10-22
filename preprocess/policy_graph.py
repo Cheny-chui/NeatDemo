@@ -1,4 +1,3 @@
-import queue
 from .topo_graph import add_drop
 
 POLICY = {}
