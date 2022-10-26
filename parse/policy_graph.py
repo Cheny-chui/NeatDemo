@@ -3,16 +3,16 @@ from .topo_graph import add_drop
 
 POLICY = {}
 
-POLICY_NODE_CHILDREN = {
+POLICY_NODE_CHILDREN = {}
 
-}
-
-POLICY_NODE_ANCESTOR = {
-
-}
+POLICY_NODE_ANCESTOR = {}
 
 
 def init_policy(policies: set[tuple[str, str, int, int]]):
+    global POLICY_NODE_CHILDREN
+    global POLICY_NODE_ANCESTOR
+    POLICY_NODE_CHILDREN = {}
+    POLICY_NODE_ANCESTOR = {}
     for policy in policies:  # (p:str,q:str,m:int,n:int)
         (p, q, m, n) = policy
         POLICY[(p, q)] = (m, n)
@@ -50,7 +50,7 @@ def get_policy_graph():
     return POLICY_NODE_CHILDREN
 
 
-def have_policy_path(policy_graph, node1: str, node2: str) -> bool:
+def have_policy_path(node1: str, node2: str) -> bool:
     if node2 in POLICY_NODE_CHILDREN[node1]:
         return True
     return False

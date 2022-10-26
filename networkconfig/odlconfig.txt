@@ -1,0 +1,16 @@
+$devicename dev_D 0 0
+interface inf3
+interface inf2
+interface inf1
+$devicename dev_C 0 0
+interface inf3
+interface inf1
+interface inf2
+$devicename dev_A 0 0
+interface inf1
+interface inf2
+interface inf3
+$devicename dev_B 0 0
+interface inf1
+interface inf2
+interface inf3

@@ -1,7 +1,7 @@
 import json
 
 from core.repair import repair
-from preprocess.read_data import read_repair_data
+from parse.read_data import read_repair_data
 
 if __name__ == '__main__':
     # repair reachability

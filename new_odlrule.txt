@@ -1,9 +1,0 @@
-$devicename dev_A
-0.0.0.0/1 inf3
-$devicename dev_B
-0.0.0.0/1 received
-$devicename dev_C
-0.0.0.0/1 inf3
-11.0.0.0/8 inf2
-$devicename dev_D
-0.0.0.0/1 inf1

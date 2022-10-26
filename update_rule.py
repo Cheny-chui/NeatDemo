@@ -4,7 +4,7 @@ import sys
 
 def get_device_rules() -> dict[str, dict[str, list]]:
     device_rules = {}
-    with open('data/odlrule.txt') as input:
+    with open('networkconfig/odlrule.txt') as input:
         lines = input.readlines()
         lines = ''.join(lines).strip('\n').splitlines()
         current_dev = ''
@@ -24,7 +24,7 @@ def get_device_rules() -> dict[str, dict[str, list]]:
 
 def get_edge_port() -> dict[tuple, tuple]:
     edge_port: dict[tuple, tuple] = {}
-    with open('data/odltopo.txt') as input:
+    with open('networkconfig/odltopo.txt') as input:
         lines = input.readlines()
         lines = ''.join(lines).strip('\n').splitlines()
         edge_flag = False

@@ -1,9 +1,3 @@
-nodes:
-dev_D
-dev_C
-dev_A
-dev_B
-edges:
 dev_D.inf3 dev_C.inf3 1
 dev_A.inf1 dev_B.inf1 1
 dev_B.inf1 dev_A.inf1 1

@@ -1,0 +1,44 @@
+{
+  "loop_free_data": {
+    "0.0.0.0/1": {
+      "loops": [
+        [
+          "dev_C",
+          "dev_D",
+          "dev_B",
+          "dev_C"
+        ]
+      ],
+      "reachabilityPolicies": [
+        {
+          "from": "dev_A",
+          "to": "dev_B",
+          "match": "0.0.0.0/3",
+          "policyPredicate": 4
+        }
+      ]
+    }
+  },
+  "repair_data": {
+    "0.0.0.0/3": {
+      "configuration_graph": {
+        "dev_A": [
+          "dev_C"
+        ],
+        "dev_B": [],
+        "dev_C": [
+          "dev_D"
+        ],
+        "dev_D": []
+      },
+      "reachability_policies": [
+        {
+          "from": "dev_A",
+          "to": "dev_B",
+          "match": "0.0.0.0/3",
+          "policyPredicate": 4
+        }
+      ]
+    }
+  }
+}
