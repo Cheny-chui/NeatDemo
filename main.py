@@ -19,12 +19,10 @@ def repair_loops(loop_free_data: dict[str, dict]):
     file.close()
     for ec, loop_data in loop_free_data.items():
         loops = loop_data["loops"]
-        reachabilityPolicies = loop_data["reachability_policies"]
+        receive_policies = loop_data["policies"]
         policies = list()
-        for policy in reachabilityPolicies:
-            temp_list = list()
-            temp_list.append(policy["from"])
-            temp_list.append(policy["to"])
+        for policy in receive_policies:
+            temp_list = policy["path"]
             policies.append(tuple(temp_list))
         loop_set = list()
         for loop in loops:
@@ -34,7 +32,7 @@ def repair_loops(loop_free_data: dict[str, dict]):
         with open('./networkconfig/odlrule.txt', mode='a') as file:
             for link in deleted_links:
                 file.write(f"$devicename {link[0]}\n")
-                file.write(f"{ec} drop")
+                file.write(f"{ec} drop\n")
             file.close()
 
 
@@ -44,12 +42,15 @@ def repair_policies(repair_data: dict[str, dict]):
     for ec, data in repair_data.items():
         configuration_graph = data["configuration_graph"]
         init_configuration_graph(configuration_graph)
-        reachability_policies = data["reachability_policies"]
-        policies: set[tuple[str, str, int, int]] = set()
-        for reachability_policy in reachability_policies:
-            policy: tuple[str, str, int, int] = \
-                tuple([reachability_policy['from'], reachability_policy['to'], 1, -1])
-            policies.add(policy)
+        receive_policies = data["policies"]
+        policies: set[tuple] = set()
+        for policy in receive_policies:
+            path: list[str] = policy["path"]
+            if policy["type"] == "isolation":
+                policies.add(tuple([path[0], path[1], 0, -1]))
+            else:
+                for i in range(len(path) - 1):
+                    policies.add(tuple([path[i], path[i + 1], 1, -1]))
         init_policy(policies)
         edge_addition, edge_deletion = repair()
         print(f"delete links: {edge_deletion}")
@@ -57,13 +58,13 @@ def repair_policies(repair_data: dict[str, dict]):
         with open('./networkconfig/odlrule.txt', mode='a') as file:
             for link in edge_deletion:
                 file.write(f"$devicename {link[0]}\n")
-                file.write(f"{ec} drop")
+                file.write(f"{ec} drop\n")
             for link in edge_addition:
                 file.write(f"$devicename {link[0]}\n")
                 if link[1] == "drop":
-                    file.write(f"{ec} {link[1]}")
+                    file.write(f"{ec} drop\n")
                 else:
-                    file.write(f"{ec} {edge_to_interface[f'{link[0]}-{link[1]}']}")
+                    file.write(f"{ec} {edge_to_interface[f'{link[0]}-{link[1]}']}\n")
             file.close()
 
 

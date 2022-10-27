@@ -21,8 +21,8 @@ def add_drop(i, j):
     if 'drop' not in TOPO_GRAPH:
         TOPO_GRAPH['drop'] = list()
     if i not in TOPO_GRAPH['drop']:
-        TOPO_GRAPH['drop'].append(i)
-        TOPO_GRAPH[i].append('drop')
+        TOPO_GRAPH['drop'].add(i)
+        TOPO_GRAPH[i].add('drop')
     if j not in TOPO_GRAPH['drop']:
-        TOPO_GRAPH['drop'].append(j)
-        TOPO_GRAPH[j].append('drop')
+        TOPO_GRAPH['drop'].add(j)
+        TOPO_GRAPH[j].add('drop')
