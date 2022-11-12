@@ -131,7 +131,12 @@ def repair(flag=None):
             if value == 1 and (i, j) not in configuration_edges:
                 edge_addition.add(tuple([i, j]))
             if value == 0 and ((i, j) in configuration_edges):
-                edge_deletion.add(tuple([i, j]))
+                judge_change = False
+                for x in topo_graph[i]:
+                    if configuration_edge_select[i, x] == 1:
+                        judge_change = True
+                if not judge_change:
+                    edge_deletion.add(tuple([i, j]))
         return edge_addition, edge_deletion
     else:
         return None, None
