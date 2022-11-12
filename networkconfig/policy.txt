@@ -1,2 +1,0 @@
-isolation:
-dev_A,dev_B 0.0.0.0/3

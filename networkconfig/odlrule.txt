@@ -1,6 +1,0 @@
-$devicename dev_C
-0.0.0.0/3 drop
-$devicename dev_A
-0.0.0.0/3 drop
-$devicename dev_A
-0.0.0.0/3 drop
